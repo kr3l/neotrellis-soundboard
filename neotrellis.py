@@ -5,6 +5,7 @@ import signal
 import board
 import atexit
 import adafruit_dotstar
+from threading import Timer
 
 from board import SCL, SDA
 import busio
@@ -31,14 +32,17 @@ CYAN = (0, 255, 255)
 BLUE = (0, 0, 255)
 PURPLE = (180, 0, 255)
 
+RECORD_AFTER_MS = 400
+
 wasOn = []
 recordProcess = False
 recordingButton = -1
+count = 0
 
 for i in range(16):
     wasOn.append(0)
 
-def stopRecording():
+def stopRecording(dropRecording=False):
     global recordProcess
     global recordingButton
     if not(recordProcess):
@@ -50,6 +54,12 @@ def stopRecording():
     recordProcess.terminate()
     recordProcess = None
     wasOn[recordingButton] = 0
+    if (not dropRecording):
+        try:
+            os.remove(str(recordingButton) + ".wav")
+        except:
+            pass
+        os.rename(str(recordingButton) + "_tmp.wav", str(recordingButton) + ".wav")
     recordingButton = -1
     for j in range(3):
         dots[j] = (0, 0, 0)
@@ -58,12 +68,20 @@ def stopRecording():
 def startRecording(buttonNumber):
     global recordProcess
     global recordingButton
+    global count
+    count = count + 1
     wasOn[buttonNumber] = 0
     stopRecording()
     recordingButton = buttonNumber
     print("START RECORD " + str(buttonNumber))
     filename = str(buttonNumber) + ".wav"
-    recordProcess = subprocess.Popen(["arecord", "-f", "cd", "-Dhw:0", "-t", "wav", filename], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    # env with AUDIODEV var set for sox
+    myoutput = open(filename + "-record.log",'w+')
+    myoutput2 = open(filename + "-recorderr.log",'w+')
+    # recordProcess = subprocess.Popen(["arecord", "-f", "cd", "-Dhw:0", "-t", "wav", filename], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    # subprocess.Popen(my_command, env=my_env)
+    #recordProcess = subprocess.Popen(["rec", filename, "-V4"], env=my_env, shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
+    recordProcess = subprocess.Popen(["./record.sh", str(buttonNumber)], shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
     for j in range(3):
         dots[j] = (255, 0, 0)
     dots.show()
@@ -108,7 +126,10 @@ def blink(event):
         wasOn[event.number] = 0
         if diff < 200:
             playRecording(event.number)
-        stopRecording()
+            stopRecording(True)
+        s = Timer(0.3, stopRecording, ())
+        s.start()
+        #stopRecording()
 
 for i in range(16):
     # activate rising edge events on all keys
@@ -138,7 +159,7 @@ while True:
     for i in range(16):
         if wasOn[i] > 0:
             diff = now - wasOn[i]
-            if (diff > 200):
+            if (diff > RECORD_AFTER_MS):
                 startRecording(i)
                 break
 
