@@ -56,8 +56,8 @@ def stopRecording(dropRecording=False):
     os.killpg(recordProcess.pid, signal.SIGTERM)
     recordProcess.terminate()
     recordProcess = None
-    playSilenceProcess.terminate()
-    playSilenceProcess = None
+    #playSilenceProcess.terminate()
+    #playSilenceProcess = None
     wasOn[recordingButton] = 0
     if (not dropRecording):
         try:
@@ -87,7 +87,7 @@ def startRecording(buttonNumber):
     # recordProcess = subprocess.Popen(["arecord", "-f", "cd", "-Dhw:0", "-t", "wav", filename], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     # subprocess.Popen(my_command, env=my_env)
     #recordProcess = subprocess.Popen(["rec", filename, "-V4"], env=my_env, shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
-    playSilenceProcess = subprocess.Popen(["aplay", "silence.wav"], stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
+    #playSilenceProcess = subprocess.Popen(["aplay", "silence2.wav"], stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
     recordProcess = subprocess.Popen(["./record.sh", str(buttonNumber)], shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
     for j in range(3):
         dots[j] = (255, 0, 0)
