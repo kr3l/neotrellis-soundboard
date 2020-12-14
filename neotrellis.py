@@ -1,6 +1,7 @@
 import time
 import subprocess
 import os
+import sys
 import signal
 import board
 import atexit
@@ -10,6 +11,10 @@ from threading import Timer
 from board import SCL, SDA
 import busio
 from adafruit_neotrellis.neotrellis import NeoTrellis
+
+abspath = os.path.abspath(sys.argv[0])
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 DOTSTAR_DATA = board.D5
 DOTSTAR_CLOCK = board.D6
