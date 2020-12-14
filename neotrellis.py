@@ -38,6 +38,8 @@ wasOn = []
 recordProcess = False
 recordingButton = -1
 count = 0
+playSilenceProcess = False
+playSampleProcess = False
 
 for i in range(16):
     wasOn.append(0)
@@ -45,6 +47,7 @@ for i in range(16):
 def stopRecording(dropRecording=False):
     global recordProcess
     global recordingButton
+    global playSilenceProcess
     if not(recordProcess):
         return
     if (recordingButton<0):
@@ -53,6 +56,8 @@ def stopRecording(dropRecording=False):
     os.killpg(recordProcess.pid, signal.SIGTERM)
     recordProcess.terminate()
     recordProcess = None
+    playSilenceProcess.terminate()
+    playSilenceProcess = None
     wasOn[recordingButton] = 0
     if (not dropRecording):
         try:
@@ -69,6 +74,7 @@ def startRecording(buttonNumber):
     global recordProcess
     global recordingButton
     global count
+    global playSilenceProcess
     count = count + 1
     wasOn[buttonNumber] = 0
     stopRecording()
@@ -81,14 +87,16 @@ def startRecording(buttonNumber):
     # recordProcess = subprocess.Popen(["arecord", "-f", "cd", "-Dhw:0", "-t", "wav", filename], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     # subprocess.Popen(my_command, env=my_env)
     #recordProcess = subprocess.Popen(["rec", filename, "-V4"], env=my_env, shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
+    playSilenceProcess = subprocess.Popen(["aplay", "silence.wav"], stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
     recordProcess = subprocess.Popen(["./record.sh", str(buttonNumber)], shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
     for j in range(3):
         dots[j] = (255, 0, 0)
     dots.show()
 
 def playRecording(buttonNumber):
+    global playSampleProcess
     print("PLAY RECORD " + str(buttonNumber))
-    subprocess.Popen(["aplay", str(buttonNumber) + ".wav"], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    playSampleProcess = subprocess.Popen(["aplay", str(buttonNumber) + ".wav"], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     print("after play")
 
 def wheel(pos):
