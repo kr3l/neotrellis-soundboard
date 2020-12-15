@@ -7,13 +7,19 @@ import board
 import atexit
 import adafruit_dotstar
 from threading import Timer
+from digitalio import DigitalInOut, Direction, Pull
 
 from board import SCL, SDA
 import busio
 from adafruit_neotrellis.neotrellis import NeoTrellis
 
+button = DigitalInOut(board.D17)
+button.direction = Direction.INPUT
+button.pull = Pull.UP
+
 abspath = os.path.abspath(sys.argv[0])
 dname = os.path.dirname(abspath)
+print("change dir to " + dname)
 os.chdir(dname)
 
 DOTSTAR_DATA = board.D5
@@ -45,6 +51,8 @@ recordingButton = -1
 count = 0
 playSilenceProcess = False
 playSampleProcess = False
+
+buttonDownSince = -1
 
 for i in range(16):
     wasOn.append(0)
@@ -93,7 +101,7 @@ def startRecording(buttonNumber):
     # subprocess.Popen(my_command, env=my_env)
     #recordProcess = subprocess.Popen(["rec", filename, "-V4"], env=my_env, shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
     #playSilenceProcess = subprocess.Popen(["aplay", "silence2.wav"], stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
-    recordProcess = subprocess.Popen(["./record.sh", str(buttonNumber)], shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
+    recordProcess = subprocess.Popen([dname + "/record.sh", str(buttonNumber)], shell=False, stdout=myoutput, stderr=myoutput2, preexec_fn=os.setsid)
     for j in range(3):
         dots[j] = (255, 0, 0)
     dots.show()
@@ -169,6 +177,19 @@ atexit.register(cleanup)
 while True:
     # check if a button is down for more than 200ms
     now = int(time.time() * 1000)
+    if not button.value:
+        if buttonDownSince == -1:
+            buttonDownSince = now
+    elif button.value and buttonDownSince != -1:
+        buttonDownSince = -1
+    if buttonDownSince != -1:
+        if (now - buttonDownSince) > 2000 and (now - buttonDownSince) < 5000:
+            print("shutdown")
+            buttonDownSince = now - 5000
+            playSampleProcess = subprocess.Popen(["aplay", "shutdown.wav"], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+        if (now - buttonDownSince) > 7000:
+            buttonDownSince = -1
+            subprocess.call("sudo nohup shutdown -h now", shell=True)
     for i in range(16):
         if wasOn[i] > 0:
             diff = now - wasOn[i]
