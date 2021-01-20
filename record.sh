@@ -3,8 +3,9 @@
 
 #arecord -Dhw:0 -f dat | sox -t wav -b 16 -r 44100 -e signed - -t wav $1_tmp.wav trim 00:00:00.10 lowpass 9k sinc 1727-1127 sinc 3170-2570 sinc 4545-3945 sinc 5989-5389 sinc 7389-6789 sinc 8842-8242 noisered speech.noise-profile 0.15
 
-arecord -Dhw:0 -f dat | sox -t wav -b 16 -r 44100 -e signed - -t wav $1_tmp.wav trim 00:00:00.10 lowpass 9k sinc 1727-1127 sinc 3170-2570 sinc 4545-3945 sinc 5989-5389 sinc 7389-6789 sinc 8842-8242
+#arecord -Dhw:0 -f dat | sox -t wav -b 16 -r 44100 -e signed - -t wav $1_tmp.wav trim 00:00:00.10 lowpass 9k sinc 1727-1127 sinc 3170-2570 sinc 4545-3945 sinc 5989-5389 sinc 7389-6789 sinc 8842-8242
 
+arecord -Dhw:1,0 --format S16_LE --rate 44100 -c1 $1_tmp.wav
 
 # The command first records with arecord (it would be easier to record directly with sox, but this keeps the audio device blocked for a few seconds after recording stops for some reason
 # Then pipe into sox

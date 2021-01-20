@@ -83,3 +83,12 @@ then
 @reboot python3 /home/pi/neotrellis-soundboard/neotrellis.py
 ```
 
+# Setup part 2: usb audio device
+
+- bought https://www.bol.com/nl/p/3-5mm-to-usb-sound-card-adapter-audio-5-1/9200000058028767/?s2a=
+and https://www.amazon.de/gp/product/B06XJCDYHB/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1
+- adafruit guide https://learn.adafruit.com/usb-audio-cards-with-a-raspberry-pi/generalplus
+- record on the usb device
+```arecord --device=hw:1,0 --format S16_LE --rate 44100 -c1 test.wav```
+- play out on voice bonnet
+```aplay --device=plughw:0,0 test.wav```

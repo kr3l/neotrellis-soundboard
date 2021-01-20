@@ -109,7 +109,7 @@ def startRecording(buttonNumber):
 def playRecording(buttonNumber):
     global playSampleProcess
     print("PLAY RECORD " + str(buttonNumber))
-    playSampleProcess = subprocess.Popen(["aplay", str(buttonNumber) + ".wav"], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    playSampleProcess = subprocess.Popen(["aplay", "-Dplughw:0,0", str(buttonNumber) + ".wav"], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     print("after play")
 
 def wheel(pos):
@@ -186,7 +186,7 @@ while True:
         if (now - buttonDownSince) > 2000 and (now - buttonDownSince) < 5000:
             print("shutdown")
             buttonDownSince = now - 5000
-            playSampleProcess = subprocess.Popen(["aplay", "shutdown.wav"], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+            playSampleProcess = subprocess.Popen(["aplay", "-Dplughw:0,0", "shutdown.wav"], shell=False, stderr=subprocess.PIPE, preexec_fn=os.setsid)
         if (now - buttonDownSince) > 7000:
             buttonDownSince = -1
             subprocess.call("sudo nohup shutdown -h now", shell=True)
